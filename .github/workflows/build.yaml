@@ -9,5 +9,7 @@ on:
         default: 'GitHub User'
 
 jobs:
-  setup:
-    uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows/action.yml@main
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: rajatsaini1/github-action-centralised-prerequisites/workflows@main
