@@ -1,0 +1,13 @@
+name: Use Prerequisites
+
+on:
+  workflow_dispatch:
+    inputs:
+      name:
+        description: 'Name of the person running the workflow'
+        required: false
+        default: 'GitHub User'
+
+jobs:
+  setup:
+    uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows/action.yml@main
