@@ -12,4 +12,4 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: rajatsaini1/github-action-centralised-prerequisites/workflows@main
+      - uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows@main
