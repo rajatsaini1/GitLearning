@@ -13,4 +13,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
        - run: echo "Installing helm"
-       - uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows@main
+     #  - uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows@main
