@@ -9,8 +9,11 @@ on:
         default: 'GitHub User'
 
 jobs:
+  prerequisites:
+    uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows/action.yaml@main
+    secrets:
+      token: ${{ secrets.WORKFLOW_TOKEN }}
   build:
     runs-on: ubuntu-latest
     steps:
        - run: echo "Installing helm"
-       - uses: rajatsaini1/github-action-centralised-prerequisites/.github/workflows/action.yaml@main
