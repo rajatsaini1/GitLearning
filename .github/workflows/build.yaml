@@ -10,7 +10,7 @@ on:
 
 jobs:
   prerequisites:
-    uses: rajatsaini0777/github-action-centralised-prerequisites/.github/workflows/action.yaml@main
+    uses: rajatsaini0777/prerequisites_repo/.github/workflows/action.yaml@main
     secrets:
       token: ${{ secrets.WORKFLOW_TOKEN }}
   build:
