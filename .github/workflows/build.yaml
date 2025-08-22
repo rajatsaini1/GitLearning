@@ -1,19 +1,17 @@
-name: Use Prerequisites
-
-on:
-  workflow_dispatch:
-    inputs:
-      name:
-        description: 'Name of the person running the workflow'
-        required: false
-        default: 'GitHub User'
-
+name: Notify in Slack Channels
+on: workflow_dispatch
 jobs:
-  prerequisites:
-    uses: rajatsaini0777/prerequisites_repo/.github/workflows/action.yaml@main
-    secrets:
-      token: ${{ secrets.WORKFLOW_TOKEN }}
-  build:
+  notify-slack:
     runs-on: ubuntu-latest
+    name: A job to notify in slack with my github actions
+    environment: Slackbot Notification
     steps:
-       - run: echo "Installing helm"
+      - uses: actions/checkout@v2
+      - name: Notify Slack Test Result
+        uses: sanjaykrishnanrs/slack-notify-junitxml-action@0.1.12-alpha
+        with:
+          title: API Tests
+          slackbotid: ${{ secrets.SLACKBOTID }}
+          slackbottoken: ${{ secrets.SLACKBOTTOKEN }}
+          slackchannel: '${{ secrets.SLACKCHANNEL }}'
+          junitxml_filepath: junitreport.xml
