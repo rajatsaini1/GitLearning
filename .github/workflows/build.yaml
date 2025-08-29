@@ -21,11 +21,8 @@ jobs:
           echo "slack_id=$SLACK_ID" >> $GITHUB_OUTPUT
 
       - name: Send Slack notification
-        uses: slackapi/slack-github-action@v1.24.0
-        with:
-          payload: |
-            {
-              "text": "🚀 Workflow triggered by ${{ github.actor }} (${ { steps.slack_id.outputs.slack_id }})"
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          SLACK_ID=${{ steps.slackmap.outputs.slack_id }}
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\":rocket: Workflow triggered by <@$SLACK_ID>\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
