@@ -15,7 +15,6 @@ jobs:
         run: |
           GITHUB_USER="${{ github.actor }}"
           SLACK_ID=$(jq -r --arg user "$GITHUB_USER" '.[$user]' slack_mapping.json)
-          # fallback if user not found
           if [ "$SLACK_ID" == "null" ]; then
             SLACK_ID=$GITHUB_USER
           fi
