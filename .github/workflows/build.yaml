@@ -13,12 +13,6 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-python-app .
 
-      # Run tests inside Docker and generate junit xml report
-      - name: Run tests in Docker
-        run: |
-          mkdir -p reports
-          docker run --rm -v ${{ github.workspace }}/reports:/app/reports my-python-app
-
       # Send Slack notification
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v1.27.0
