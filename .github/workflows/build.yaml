@@ -10,6 +10,61 @@ jobs:
       - name: Checkout mapping file
         uses: actions/checkout@v3
 
+      - name: Build Docker image
+        run: docker build -t my-python-app .
+
+      # Run tests inside Docker and generate junit xml report
+      - name: Run tests in Docker
+        run: |
+          mkdir -p reports
+          docker run --rm -v ${{ github.workspace }}/reports:/app/reports my-python-app
+
+      # Upload junit xml report as artifact (optional)
+      - name: Upload test reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: reports/*.xml
+
+      # Send Slack notification
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.27.0
+        with:
+          payload: |
+            {
+              "text": ":rocket: Workflow *${{ github.workflow }}* completed",
+              "attachments": [
+                {
+                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
+                  "title": "GitHub Action Result",
+                  "fields": [
+                    {
+                      "title": "Repository",
+                      "value": "${{ github.repository }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Branch",
+                      "value": "${{ github.ref_name }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Status",
+                      "value": "${{ job.status }}",
+                      "short": true
+                    },
+                    {
+                      "title": "Actor",
+                      "value": "${{ github.actor }}",
+                      "short": true
+                    }
+                  ]
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
       - name: Map GitHub user to Slack ID
         id: slackmap
         run: |
