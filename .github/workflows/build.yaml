@@ -19,13 +19,6 @@ jobs:
           mkdir -p reports
           docker run --rm -v ${{ github.workspace }}/reports:/app/reports my-python-app
 
-      # Upload junit xml report as artifact (optional)
-      - name: Upload test reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: junit-reports
-          path: reports/*.xml
-
       # Send Slack notification
       - name: Send Slack notification
         uses: slackapi/slack-github-action@v1.27.0
