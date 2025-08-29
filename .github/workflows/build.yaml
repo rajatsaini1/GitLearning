@@ -1,70 +1,67 @@
-name: Notify Slack
+name: Notify Slack on workflow trigger
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   notify:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout mapping file
-        uses: actions/checkout@v3
 
+    steps:
+      # Checkout repository (to access slack_mapping.json)
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      # Build Docker image (optional, for testing)
       - name: Build Docker image
         run: docker build -t my-python-app .
 
-      # Send Slack notification
-      - name: Send Slack notification
-        uses: slackapi/slack-github-action@v1.27.0
-        with:
-          payload: |
-            {
-              "text": ":rocket: Workflow *${{ github.workflow }}* completed",
-              "attachments": [
-                {
-                  "color": "${{ job.status == 'success' && 'good' || 'danger' }}",
-                  "title": "GitHub Action Result",
-                  "fields": [
-                    {
-                      "title": "Repository",
-                      "value": "${{ github.repository }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Branch",
-                      "value": "${{ github.ref_name }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Status",
-                      "value": "${{ job.status }}",
-                      "short": true
-                    },
-                    {
-                      "title": "Actor",
-                      "value": "${{ github.actor }}",
-                      "short": true
-                    }
-                  ]
-                }
-              ]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      # Run your tests (optional)
+      - name: Run tests inside Docker
+        run: docker run --rm -v ${{ github.workspace }}/reports:/app/reports my-python-app
 
+      # Map GitHub username to Slack ID
       - name: Map GitHub user to Slack ID
         id: slackmap
         run: |
           GITHUB_USER="${{ github.actor }}"
           SLACK_ID=$(jq -r --arg user "$GITHUB_USER" '.[$user]' slack_mapping.json)
-          if [ "$SLACK_ID" == "null" ]; then
+          if [ "$SLACK_ID" == "null" ] || [ -z "$SLACK_ID" ]; then
             SLACK_ID=$GITHUB_USER
           fi
           echo "slack_id=$SLACK_ID" >> $GITHUB_OUTPUT
 
+      # Send Slack notification with workflow status
       - name: Send Slack notification
+        if: always()  # ensures it runs even if previous steps fail
         run: |
           SLACK_ID=${{ steps.slackmap.outputs.slack_id }}
+          # Detect job status
+          STATUS="UNKNOWN"
+          if [ "${{ job.status }}" == "success" ]; then
+            STATUS="✅ SUCCESS"
+            COLOR="good"
+          else
+            STATUS="❌ FAILURE"
+            COLOR="danger"
+          fi
+          # Send Slack message
           curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\":rocket: Workflow triggered by <@$SLACK_ID>\"}" \
+            --data "{
+              \"text\": \":rocket: Workflow *${{ github.workflow }}* triggered by <@$SLACK_ID>\",
+              \"attachments\": [
+                {
+                  \"color\": \"$COLOR\",
+                  \"fields\": [
+                    {\"title\": \"Repository\", \"value\": \"${{ github.repository }}\", \"short\": true},
+                    {\"title\": \"Branch\", \"value\": \"${{ github.ref_name }}\", \"short\": true},
+                    {\"title\": \"Status\", \"value\": \"$STATUS\", \"short\": true},
+                    {\"title\": \"Actor\", \"value\": \"<@$SLACK_ID>\", \"short\": true}
+                  ]
+                }
+              ]
+            }" \
             ${{ secrets.SLACK_WEBHOOK_URL }}
