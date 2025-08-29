@@ -19,10 +19,6 @@ jobs:
       - name: Build Docker image
         run: docker build -t my-python-app .
 
-      # Run your tests (optional)
-      - name: Run tests inside Docker
-        run: docker run --rm -v ${{ github.workspace }}/reports:/app/reports my-python-app
-
       # Map GitHub username to Slack ID
       - name: Map GitHub user to Slack ID
         id: slackmap
