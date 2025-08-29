@@ -1,17 +1,28 @@
-name: Notify in Slack Channels
-on: workflow_dispatch
+name: Notify Slack
+
+on:
+  workflow_dispatch:
+
 jobs:
-  notify-slack:
+  notify:
     runs-on: ubuntu-latest
-    name: A job to notify in slack with my github actions
-    environment: Slackbot Notification
     steps:
-      - uses: actions/checkout@v2
-      - name: Notify Slack Test Result
-        uses: sanjaykrishnanrs/slack-notify-junitxml-action@0.1.12-alpha
+      - name: Checkout mapping file
+        uses: actions/checkout@v3
+
+      - name: Get Slack ID from GitHub username
+        id: slack_id
+        run: |
+          GITHUB_USER="${{ github.actor }}"
+          SLACK_ID=$(jq -r --arg user "$GITHUB_USER" '.[$user]' slack_mapping.json)
+          echo "slack_id=$SLACK_ID" >> $GITHUB_OUTPUT
+
+      - name: Send Slack notification
+        uses: slackapi/slack-github-action@v1.24.0
         with:
-          title: API Tests
-          slackbotid: ${{ secrets.SLACKBOTID }}
-          slackbottoken: ${{ secrets.SLACKBOTTOKEN }}
-          slackchannel: '${{ secrets.SLACKCHANNEL }}'
-          junitxml_filepath: junitreport.xml
+          payload: |
+            {
+              "text": "🚀 Workflow triggered by ${{ github.actor }} (${ { steps.slack_id.outputs.slack_id }})"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
