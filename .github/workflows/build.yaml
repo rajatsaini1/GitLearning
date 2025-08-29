@@ -10,11 +10,15 @@ jobs:
       - name: Checkout mapping file
         uses: actions/checkout@v3
 
-      - name: Get Slack ID from GitHub username
-        id: slack_id
+      - name: Map GitHub user to Slack ID
+        id: slackmap
         run: |
           GITHUB_USER="${{ github.actor }}"
           SLACK_ID=$(jq -r --arg user "$GITHUB_USER" '.[$user]' slack_mapping.json)
+          # fallback if user not found
+          if [ "$SLACK_ID" == "null" ]; then
+            SLACK_ID=$GITHUB_USER
+          fi
           echo "slack_id=$SLACK_ID" >> $GITHUB_OUTPUT
 
       - name: Send Slack notification
